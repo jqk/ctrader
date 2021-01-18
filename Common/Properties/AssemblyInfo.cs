@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Common")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("Notadream.Common")]
+[assembly: AssemblyDescription("用于cAlgo的通用库")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Common")]
-[assembly: AssemblyCopyright("Copyright ©  2021")]
+[assembly: AssemblyCompany("Notadream")]
+[assembly: AssemblyProduct("Notadream.Common")]
+[assembly: AssemblyCopyright("Copyright ©  2021, Notadream")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
