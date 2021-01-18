@@ -13,13 +13,13 @@
         public const int IndexNotFound = -1;
 
         /// <summary>
-        /// 确定计算开始位置的bar的位置。
+        /// 确定计算开始位置的bar的位置。最少需3个bar才有效。
         /// </summary>
         /// <param name="totalBarCount">可用bar的总数。大于0。</param>
         /// <param name="barCount">准备最多计算bar的数量。大于0。</param>
-        /// <param name="bufferSize">计算一个bar时，所需前面bar的数量。大于0。</param>
+        /// <param name="bufferSize">计算一个bar时，所需前面bar的数量。大于0，默认为1。</param>
         /// <returns>开始的位置，返回<see cref="IndexNotFound"/>表示发生错误，未找到位置。</returns>
-        public static int GetStartBarIndex(int totalBarCount, int barCount, int bufferSize)
+        public static int GetStartBarIndex(int totalBarCount, int barCount, int bufferSize = 1)
         {
             // 校验参数的有效性，以及总的可用bar数必须足够。
             // 最后一个条件3是用于确定两个bar之间最小时差时（不跨休息日时），最少要3个bar。

@@ -58,7 +58,7 @@
         #endregion
 
         /// <summary>
-        /// 对当前序列进行指标记录。
+        /// 对当前序列进行指标计算。
         /// </summary>
         /// <param name="index">序列下标。</param>
         public override void Calculate(int index)
