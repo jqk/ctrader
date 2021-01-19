@@ -11,6 +11,11 @@
         #region 变量
 
         /// <summary>
+        /// 当前交易周最后一个时间与下一交易周第一个时间相差的秒数，暂定为36小时。
+        /// </summary>
+        private const int WeekChangeSeconds = 129600;
+
+        /// <summary>
         /// 参数是否有效。
         /// </summary>
         private bool parameterIsValid = true;
@@ -24,11 +29,6 @@
         /// 上次计算的周期下标，避免对当前周期重复计算。
         /// </summary>
         private int lastIndex = -1;
-
-        /// <summary>
-        /// 当前周期的时长秒数。
-        /// </summary>
-        private int timeFrameSeconds;
 
         #region 参数
 
@@ -61,8 +61,8 @@
             // 当前bar与上一个bar之间相差的秒数。
             var seconds = (int)(Bars.OpenTimes[index] - Bars.OpenTimes[index - 1]).TotalSeconds;
 
-            // 如果当前bar与上一个bar之间相差的秒数超过了周期应有的秒数，说明是跨周了。
-            if (seconds > timeFrameSeconds)
+            // 如果当前bar与上一个bar之间相差的秒数超过了周之间应有的秒数，说明是跨周了。
+            if (seconds > WeekChangeSeconds)
             {
                 // 在两个bar之间，调整秒数需除以2。
                 seconds >>= 1;
@@ -84,7 +84,6 @@
 
             // 有足够的序列供计算，且周期小于等于1天。
             parameterIsValid = startIndex != Common.IndexNotFound || TimeFrame > TimeFrame.Daily;
-            timeFrameSeconds = Common.GetTimeFrameSeconds(Bars.OpenTimes);
         }
     }
 }
