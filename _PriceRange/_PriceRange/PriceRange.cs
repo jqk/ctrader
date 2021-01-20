@@ -1,7 +1,7 @@
 ﻿namespace Notadream
 {
-    using cAlgo.API;
     using System;
+    using cAlgo.API;
 
     /// <summary>
     /// 显示每个bar实体和整体长度的指标。
@@ -67,7 +67,7 @@
         /// 符合要求的整体最小高度。
         /// </summary>
         [Output("Min Height", LineColor = "LightBlue", LineStyle = LineStyle.Dots)]
-        public IndicatorDataSeries Limit { get; set; }
+        public IndicatorDataSeries Level { get; set; }
 
         /// <summary>
         /// 是否是十字星。要满足<see cref="BarHeightResult"/>大于等于<see cref="MinHeight"/>，
@@ -101,19 +101,23 @@
             // 允许画bar高度小于最小高度，或者bar高度本身大于等于调小高度的信号。
             if (DrawBelowMinHeight || barHeight >= MinHeight)
             {
+                // 输出。
                 BarHeightResult[index] = barHeight;
 
                 var coreHeight = Math.Abs(bar.Open - bar.Close) / Symbol.PipSize;
+                // 输出。
                 CoreHeightResult[index] = coreHeight;
 
                 // 判断是否为十字星。
                 if (coreHeight * 100 / barHeight <= CrossPercent)
-                {
+                {   
+                    // 输出。
                     CrossStart[index] = barHeight + Common.GetDrawDistance(Bars, Symbol.PipSize);
                 }
             }
 
-            Limit[index] = MinHeight;
+            // 输出。
+            Level[index] = MinHeight;
         }
 
         /// <summary>
