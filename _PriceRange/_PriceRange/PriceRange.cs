@@ -123,7 +123,7 @@
         {
             startIndex = Common.GetStartBarIndex(Bars.Count, BarCount);
 
-            // 有足够的序列供计算，且周期小于等于1天。
+            // 有足够的序列供计算。
             parameterIsValid = startIndex != Common.IndexNotFound;
         }
     }
