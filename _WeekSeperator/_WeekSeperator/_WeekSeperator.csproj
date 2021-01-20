@@ -48,7 +48,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="_share\Common.cs" />
+    <Compile Include="..\..\Common\Common.cs">
+      <Link>Common.cs</Link>
+    </Compile>
     <Compile Include="WeekSeperator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
