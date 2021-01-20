@@ -107,5 +107,41 @@
 
             return result;
         }
+
+        /// <summary>
+        /// 确定在bar的上下画图时需调整的距离点数或价格。
+        /// <para>方法是求count个bar的平均高度，然后除以factor。</para>
+        /// </summary>
+        /// <param name="bars">计算所依据的bar集合。</param>
+        /// <param name="pipSize">一单位货币包含点的数量。默认为0，表示返回点数，否则返回价格。</param>
+        /// <param name="count">计算bar的数量，默认为10。</param>
+        /// <param name="factor">距离因子，默认为5。</param>
+        /// <returns>距离点数或价格。</returns>
+        public static double GetDrawDistance(Bars bars, double pipSize = 0, int count = 10, int factor = 5)
+        {
+            int index = bars.Count - 1;
+            int start = index - count;
+
+            // 保证有足够的bar可供计算。
+            if (start < 0)
+            {
+                start = 0;
+                count = index + 1;
+            }
+
+            double avg = 0;
+
+            // 先求这些bar的高度之和。
+            for (int i = start; i <= index; i++)
+            {
+                var bar = bars[i];
+                avg += bar.High - bar.Low;
+            }
+
+            // 再求平均值。如果要返回点数，需除PipSize。
+            avg /= pipSize > 0 ? pipSize * count : count;
+
+            return avg / factor;
+        }
     }
 }

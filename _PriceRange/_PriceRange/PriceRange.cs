@@ -109,7 +109,7 @@
                 // 判断是否为十字星。
                 if (coreHeight * 100 / barHeight <= CrossPercent)
                 {
-                    CrossStart[index] = barHeight + 5;
+                    CrossStart[index] = barHeight + Common.GetDrawDistance(Bars, Symbol.PipSize);
                 }
             }
 
