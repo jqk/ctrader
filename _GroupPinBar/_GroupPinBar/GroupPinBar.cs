@@ -22,6 +22,11 @@
         private int startIndex;
 
         /// <summary>
+        /// 上次计算的周期下标，避免对当前周期重复计算。
+        /// </summary>
+        private int lastIndex = -1;
+
+        /// <summary>
         /// 以价格表示的组合的最小高度。
         /// </summary>
         private double minHeight;
@@ -64,10 +69,10 @@
         public override void Calculate(int index)
         {
             // 判断以下这些条件，说明顺序与代码判断顺序可能不同。
-            // * 不是最新的bar。
+            // * 已执行的bar不再执行。
             // * 在指定的周期数之前不执行。
             // * 参数不合法不执行。
-            var shouldNotRun = IsLastBar || !parameterIsValid || index < startIndex;
+            var shouldNotRun = !parameterIsValid || index < startIndex || index == lastIndex;
             if (shouldNotRun)
             {
                 return;
@@ -85,6 +90,9 @@
                     DrawSignal(bar, start, index, i);
                 }
             }
+
+            // 记录已执行的bar位置。
+            lastIndex = index;
         }
 
         /// <summary>
