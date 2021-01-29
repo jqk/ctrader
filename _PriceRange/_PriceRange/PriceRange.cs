@@ -97,7 +97,13 @@
 
             var bar = Bars[index];
             var barHeight = (bar.High - bar.Low) / Symbol.PipSize;
-            
+
+            // 由于对于当前bar重复计算，所以应先删除上一次计算的值，
+            // 以避免上一次符合而这一次不符合但仍留在图上。
+            CrossStart[index] = double.NaN;
+            BarHeightResult[index] = double.NaN;
+            CoreHeightResult[index] = double.NaN;
+
             // 允许画bar高度小于最小高度，或者bar高度本身大于等于调小高度的信号。
             if (DrawBelowMinHeight || barHeight >= MinHeight)
             {
