@@ -2,14 +2,19 @@
 {
     using cAlgo.API;
     using cAlgo.API.Internals;
+    using NLog;
+    using NLog.Config;
+    using NLog.Targets;
 
     /// <summary>
     /// Group Pin Bar指标。
     /// </summary>
-    [Indicator(IsOverlay = true, TimeZone = TimeZones.UTC, AccessRights = AccessRights.None)]
+    [Indicator(IsOverlay = true, TimeZone = TimeZones.UTC, AccessRights = AccessRights.FileSystem)]
     public class GroupPinBar : Indicator
     {
         #region 变量
+
+        private Logger logger;
 
         /// <summary>
         /// 参数是否有效。
@@ -86,9 +91,15 @@
 
                 if (bar.IsSignal)
                 {
-                    Print("[{0}] [{1}] height = {2:F1}, core = {3:F1}, percent = {4:F1}%", Bars.OpenTimes[index], i, bar.GroupHeight / Symbol.PipSize, bar.CoreHeight / Symbol.PipSize, bar.CorePercent);
                     DrawSignal(bar, start, index, i);
+
+                    var openTime = Bars.OpenTimes[index].ToString("yyyy-MM-dd HH:mm");
+                    var height = bar.GroupHeight / Symbol.PipSize;
+                    var core = bar.CoreHeight / Symbol.PipSize;
+
+                    logger.Info("[{0}] [{1}] height = {2:F1}, core = {3:F1}, percent = {4:F1}%", openTime, i, height, core, bar.CorePercent);
                 }
+
             }
 
             // 记录已执行的bar位置。
@@ -103,6 +114,8 @@
             startIndex = Common.GetStartBarIndex(Bars.Count, BarCount, GroupSize);
             parameterIsValid = startIndex != Common.IndexNotFound;
             minHeight = MinPips * Symbol.PipValue;
+
+            logger = CreateLogger(this);
         }
 
         /// <summary>
@@ -169,6 +182,49 @@
             var time2 = Bars.OpenTimes[index].AddSeconds(adjust2);
 
             Chart.DrawRectangle(name, time1, price1, time2, price2, color);
+        }
+
+        /// <summary>
+        /// 创建日志对象。
+        /// </summary>
+        /// <param name="indicator">使用日志的指标对象。</param>
+        /// <param name="logStartup">是否记录指标启动，默认为true。</param>
+        /// <returns>返回日志对象。</returns>
+        private Logger CreateLogger(Indicator indicator, bool logStartup = true)
+        {
+            var stack = new System.Diagnostics.StackTrace(true);
+            var method = stack.GetFrame(1).GetMethod();
+            var creater = method.DeclaringType.Name;
+            var symbol = indicator.SymbolName;
+            var timeFrame = indicator.TimeFrame;
+
+            // Step 1. Create configuration object.
+            var config = new LoggingConfiguration();
+
+            // Step 2. Create target.
+            var fileTarget = new FileTarget()
+            {
+                FileName = "${basedir}/cTraderLogs/" + symbol + "_" + timeFrame + "_" + creater + ".log",
+                Layout = @"${longdate} ${level:uppercase=true} ${message}"
+            };
+
+            config.AddTarget("file", fileTarget);
+
+            // Step 3. Define rules.
+            config.LoggingRules.Add(new LoggingRule("*", LogLevel.Debug, fileTarget));
+
+            // Step 4. Activate the configuration.
+            LogManager.Configuration = config;
+
+            // Step 5. Create logger.
+            var logger = LogManager.GetCurrentClassLogger();
+
+            if (logStartup)
+            {
+                logger.Info("{0}-{1}-{2} indicator start", symbol, timeFrame, creater);
+            }
+
+            return logger;
         }
 
         #region 内部类
