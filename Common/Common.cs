@@ -1,6 +1,9 @@
 ﻿namespace Notadream
 {
     using cAlgo.API;
+    using NLog;
+    using NLog.Config;
+    using NLog.Targets;
 
     /// <summary>
     /// 通用工具类。
@@ -142,6 +145,50 @@
             avg /= pipSize > 0 ? pipSize * count : count;
 
             return avg / factor;
+        }
+
+        /// <summary>
+        /// 创建日志对象。
+        /// </summary>
+        /// <param name="indicator">使用日志的指标对象。</param>
+        /// <param name="logStartup">是否记录指标启动，默认为true。</param>
+        /// <returns>返回日志对象。</returns>
+        public static Logger CreateLogger(Indicator indicator, bool logStartup = true)
+        {
+            var stack = new System.Diagnostics.StackTrace(true);
+            var method = stack.GetFrame(1).GetMethod();
+            var creater = method.DeclaringType.Name;
+            var symbol = indicator.SymbolName;
+            var timeFrame = indicator.TimeFrame;
+            var loggerName = symbol + "-" + timeFrame + "-" + creater;
+
+            // Step 1. Create configuration object.
+            var config = new LoggingConfiguration();
+
+            // Step 2. Create target.
+            var fileTarget = new FileTarget()
+            {
+                FileName = "${basedir}/cTraderLogs/" + loggerName + ".log",
+                Layout = @"${longdate} ${level:uppercase=true} ${message}"
+            };
+
+            config.AddTarget("file", fileTarget);
+
+            // Step 3. Define rules.
+            config.LoggingRules.Add(new LoggingRule("*", LogLevel.Debug, fileTarget));
+
+            // Step 4. Activate the configuration.
+            LogManager.Configuration = config;
+
+            // Step 5. Create logger.
+            var logger = LogManager.GetLogger(loggerName);
+
+            if (logStartup)
+            {
+                logger.Info("Indicator {0} started", loggerName);
+            }
+
+            return logger;
         }
     }
 }

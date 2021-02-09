@@ -115,7 +115,7 @@
             parameterIsValid = startIndex != Common.IndexNotFound;
             minHeight = MinPips * Symbol.PipValue;
 
-            logger = CreateLogger(this);
+            logger = Common.CreateLogger(this);
         }
 
         /// <summary>
