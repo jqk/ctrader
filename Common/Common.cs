@@ -153,7 +153,7 @@
         /// <param name="indicator">使用日志的指标对象。</param>
         /// <param name="logStartup">是否记录指标启动，默认为true。</param>
         /// <returns>返回日志对象。</returns>
-        public static Logger CreateLogger(Indicator indicator, bool logStartup = true)
+        public static Logger CreateLogger(Indicator indicator, bool logStartup = true, string parameters = "")
         {
             var stack = new System.Diagnostics.StackTrace(true);
             var method = stack.GetFrame(1).GetMethod();
@@ -185,7 +185,14 @@
 
             if (logStartup)
             {
-                logger.Info("Indicator {0} started", loggerName);
+                if (string.IsNullOrWhiteSpace(parameters))
+                {
+                    logger.Info("Indicator {0} started", loggerName);
+                }
+                else
+                {
+                    logger.Info("Indicator {0} started: {1}", loggerName, parameters);
+                }
             }
 
             return logger;
