@@ -7,7 +7,8 @@
     /// <summary>
     /// Group Pin Bar指标。
     /// </summary>
-    [Indicator(IsOverlay = true, TimeZone = TimeZones.UTC, AccessRights = AccessRights.FileSystem)]
+    [Indicator(IsOverlay = true, TimeZone = TimeZones.UTC, AccessRights = AccessRights.FullAccess)]
+    //[Indicator(IsOverlay = true, TimeZone = TimeZones.UTC, AccessRights = AccessRights.FileSystem)]
     public class GroupPinBar : Indicator
     {
         #region 变量
@@ -118,6 +119,24 @@
 
             var s = string.Format("BarCount = {0}, GroupSize = {1}, MinPips = {2}, Percent = {3}", BarCount, GroupSize, MinPips, Percent);
             logger = Common.CreateLogger(this, true, s);
+
+            //由于我们只在Property设置了Attibute,所以先获取Property
+            var properties = GetType().GetProperties();
+            foreach (var property in properties)
+            {
+                // 这里只做一个ParameterAttribute的验证，这里如果要做很多验证，需要好好设计一下，
+                // 千万不要用if elseif去链接，会非常难于维护，类似这样的开源项目很多，有兴趣可以去看源码。
+                if (!property.IsDefined(typeof(ParameterAttribute), false))
+                {
+                    continue;
+                }
+
+                var value = property.GetValue(this, null);
+                
+                logger.Info("{0} = {1}", property.Name, value);
+                Print("{0} = {1}", property.Name, value);
+            }
+
         }
 
         /// <summary>
