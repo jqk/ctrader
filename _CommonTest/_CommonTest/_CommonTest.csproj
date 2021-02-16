@@ -60,12 +60,19 @@
     <Compile Include="..\..\Common\Common.cs">
       <Link>Common.cs</Link>
     </Compile>
+    <Compile Include="..\..\Common\Logging\ILogger.cs">
+      <Link>Logging\ILogger.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Common\Logging\Logger.cs">
+      <Link>Logging\Logger.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Common\Logging\LogManager.cs">
+      <Link>Logging\LogManager.cs</Link>
+    </Compile>
     <Compile Include="CommonTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Logging\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

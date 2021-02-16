@@ -3,7 +3,7 @@
     using cAlgo.API;
 
     /// <summary>
-    /// WeekSeperator指标。
+    /// 画出每周分隔线的指标。
     /// </summary>
     [Indicator(IsOverlay = true, TimeZone = TimeZones.UTC, AccessRights = AccessRights.None)]
     public class WeekSeperator : Indicator
@@ -37,6 +37,13 @@
         /// </summary>
         [Parameter(DefaultValue = 500, MinValue = 0, MaxValue = int.MaxValue)]
         public int BarCount { get; set; }
+
+        /// <summary>
+        /// 是否为日周期画分隔线。
+        /// <para>大于日周期的不画，小于日周期的必画。只有日周期自身可选择是否画分隔线。</para>
+        /// </summary>
+        [Parameter(DefaultValue = true)]
+        public bool DrawForDaily { get; set; }
 
         #endregion
 
@@ -82,8 +89,10 @@
         {
             startIndex = Common.GetStartBarIndex(Bars.Count, BarCount);
 
-            // 有足够的序列供计算，且周期小于等于1天。
-            parameterIsValid = startIndex != Common.IndexNotFound && TimeFrame <= TimeFrame.Daily;
+            var timeFrameOk = TimeFrame < TimeFrame.Daily || TimeFrame == TimeFrame.Daily && DrawForDaily;
+
+            // 有足够的序列供计算，且周期正确。
+            parameterIsValid = startIndex != Common.IndexNotFound && timeFrameOk;
         }
     }
 }

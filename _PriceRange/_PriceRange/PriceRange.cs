@@ -1,6 +1,7 @@
 ﻿namespace Notadream
 {
     using System;
+
     using cAlgo.API;
 
     /// <summary>
@@ -54,13 +55,13 @@
         /// <summary>
         /// bar的开盘、收盘价组成的核心高度。
         /// </summary>
-        [Output("Core Height", LineColor = "Yellow", PlotType = PlotType.Histogram, Thickness = 4)]
+        [Output("Body Height", LineColor = "Yellow", PlotType = PlotType.Histogram, Thickness = 4)]
         public IndicatorDataSeries CoreHeightResult { get; set; }
 
         /// <summary>
         /// bar的最高、最低价组成的整体高度。
         /// </summary>
-        [Output("Bar Height", LineColor = "Green", PlotType = PlotType.Histogram, Thickness = 2)]
+        [Output("Bar Height", LineColor = "Yellow", PlotType = PlotType.Histogram, Thickness = 1)]
         public IndicatorDataSeries BarHeightResult { get; set; }
 
         /// <summary>
@@ -73,7 +74,7 @@
         /// 是否是十字星。要满足<see cref="BarHeightResult"/>大于等于<see cref="MinHeight"/>，
         /// 且<see cref="CoreHeightResult"/>占比小于等于<see cref="CrossPercent"/>。
         /// </summary>
-        [Output("Cross Start", LineColor = "OrangeRed", PlotType = PlotType.Points, Thickness = 5)]
+        [Output("Cross Star", LineColor = "OrangeRed", PlotType = PlotType.Points, Thickness = 5)]
         public IndicatorDataSeries CrossStart { get; set; }
 
         #endregion
