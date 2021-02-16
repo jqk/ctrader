@@ -3,14 +3,20 @@
     using System;
 
     using cAlgo.API;
+    using Logging;
 
     /// <summary>
     /// 显示每个bar实体和整体长度的指标。
     /// </summary>
-    [Indicator(IsOverlay = false, TimeZone = TimeZones.UTC, AccessRights = AccessRights.None)]
+    [Indicator(IsOverlay = false, TimeZone = TimeZones.UTC, AccessRights = AccessRights.FullAccess)]
     public class PriceRange : Indicator
     {
         #region 变量
+
+        /// <summary>
+        /// 日志对象。
+        /// </summary>
+        private ILogger logger;
 
         /// <summary>
         /// 参数是否有效。
@@ -21,6 +27,11 @@
         /// 开始执行计算的周期下标。
         /// </summary>
         private int startIndex;
+
+        /// <summary>
+        /// 上次计算的周期下标，避免对当前周期重复计算。
+        /// </summary>
+        private int lastIndex = -1;
 
         #region 参数
 
@@ -48,6 +59,12 @@
         [Parameter(DefaultValue = 10, MinValue = 1, MaxValue = 20)]
         public int CrossPercent { get; set; }
 
+        /// <summary>
+        /// PinBar中bar的短端高度与整体高度的百分比。
+        /// </summary>
+        [Parameter(DefaultValue = 25, MinValue = 1, MaxValue = 40)]
+        public int PinPercent { get; set; }
+
         #endregion
 
         #region 指标输出
@@ -56,7 +73,7 @@
         /// bar的开盘、收盘价组成的核心高度。
         /// </summary>
         [Output("Body Height", LineColor = "Yellow", PlotType = PlotType.Histogram, Thickness = 4)]
-        public IndicatorDataSeries CoreHeightResult { get; set; }
+        public IndicatorDataSeries BodyHeightResult { get; set; }
 
         /// <summary>
         /// bar的最高、最低价组成的整体高度。
@@ -72,10 +89,16 @@
 
         /// <summary>
         /// 是否是十字星。要满足<see cref="BarHeightResult"/>大于等于<see cref="MinHeight"/>，
-        /// 且<see cref="CoreHeightResult"/>占比小于等于<see cref="CrossPercent"/>。
+        /// 且<see cref="BodyHeightResult"/>占比小于等于<see cref="CrossPercent"/>。
         /// </summary>
         [Output("Cross Star", LineColor = "OrangeRed", PlotType = PlotType.Points, Thickness = 5)]
-        public IndicatorDataSeries CrossStart { get; set; }
+        public IndicatorDataSeries CrossStar { get; set; }
+
+        /// <summary>
+        /// 是否是PinBar。要满足短端高度与整体高度的百分比小于等于<see cref="PinPercent"/>。
+        /// </summary>
+        [Output("Pin Bar", LineColor = "LightGreen", PlotType = PlotType.Points, Thickness = 5)]
+        public IndicatorDataSeries PinBar { get; set; }
 
         #endregion
 
@@ -89,8 +112,9 @@
         {
             // 判断以下这些条件，说明顺序与代码判断顺序可能不同。
             // * 在指定的周期数之前不执行。
+            // * 已执行的bar不再执行。
             // * 参数不合法不执行。
-            var shouldNotRun = !parameterIsValid || index < startIndex;
+            var shouldNotRun = !parameterIsValid || index < startIndex || index == lastIndex;
             if (shouldNotRun)
             {
                 return;
@@ -101,30 +125,61 @@
 
             // 由于对于当前bar重复计算，所以应先删除上一次计算的值，
             // 以避免上一次符合而这一次不符合但仍留在图上。
-            CrossStart[index] = double.NaN;
+            CrossStar[index] = double.NaN;
+            PinBar[index] = double.NaN;
             BarHeightResult[index] = double.NaN;
-            CoreHeightResult[index] = double.NaN;
+            BodyHeightResult[index] = double.NaN;
 
             // 允许画bar高度小于最小高度，或者bar高度本身大于等于调小高度的信号。
             if (DrawBelowMinHeight || barHeight >= MinHeight)
             {
-                // 输出。
+                // 输出整个柱体高度。
                 BarHeightResult[index] = barHeight;
 
-                var coreHeight = Math.Abs(bar.Open - bar.Close) / Symbol.PipSize;
-                // 输出。
-                CoreHeightResult[index] = coreHeight;
+                var bodyHeight = Math.Abs(bar.Open - bar.Close) / Symbol.PipSize;
+                // 输出柱体核心高度。
+                BodyHeightResult[index] = bodyHeight;
 
-                // 判断是否为十字星。
-                if (coreHeight * 100 / barHeight <= CrossPercent)
+                // 判断是否为十字星，并输出。
+                var percent = bodyHeight * 100 / barHeight;
+                if (percent <= CrossPercent)
                 {   
-                    // 输出。
-                    CrossStart[index] = barHeight + Common.GetDrawDistance(Bars, Symbol.PipSize);
+                    CrossStar[index] = barHeight + Common.GetDrawDistance(Bars, Symbol.PipSize);
+                    var time = bar.OpenTime.ToString("MM-dd HH:mm");
+                    logger.Info("Cross Star at [{0}], height = {1:F1}, percent = {2:F1}%", time, barHeight, percent);
+                }
+
+                double openDistance, closeDistance, coreHeight;
+
+                if (bar.Open < bar.Close)
+                {
+                    openDistance = bar.High - bar.Open;
+                    closeDistance = bar.Close - bar.Low;
+                }
+                else
+                {
+                    openDistance = bar.Open - bar.Low;
+                    closeDistance = bar.High - bar.Close;
+                }
+
+                // 选短的。
+                coreHeight = (openDistance > closeDistance ? closeDistance : openDistance) / Symbol.PipSize;
+
+                // 判断是否为PinBar并输出。
+                percent = coreHeight * 100 / barHeight;
+                if (percent <= PinPercent)
+                {
+                    PinBar[index] = barHeight + Common.GetDrawDistance(Bars, Symbol.PipSize) * 2.5;
+                    var time = bar.OpenTime.ToString("MM-dd HH:mm");
+                    logger.Info("Pin Bar at [{0}], height = {1:F1}, percent = {2:F1}%", time, barHeight, percent);
                 }
             }
 
             // 输出。
             Level[index] = MinHeight;
+
+            // 记录已执行的bar位置。
+            lastIndex = index;
         }
 
         /// <summary>
@@ -136,6 +191,8 @@
 
             // 有足够的序列供计算。
             parameterIsValid = startIndex != Common.IndexNotFound;
+
+            logger = LogManager.GetLogger(this);
         }
     }
 }
