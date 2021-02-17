@@ -89,7 +89,7 @@
         {
             startIndex = Common.GetStartBarIndex(Bars.Count, BarCount);
 
-            var timeFrameOk = TimeFrame < TimeFrame.Daily || TimeFrame == TimeFrame.Daily && DrawForDaily;
+            var timeFrameOk = TimeFrame < TimeFrame.Daily || (TimeFrame == TimeFrame.Daily && DrawForDaily);
 
             // 有足够的序列供计算，且周期正确。
             parameterIsValid = startIndex != Common.IndexNotFound && timeFrameOk;

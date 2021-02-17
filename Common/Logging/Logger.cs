@@ -10,11 +10,9 @@
     /// <summary>
     /// 供指标使用的日志类。
     /// </summary>
-    public class Logger2 : ILogger
+    public class Logger : ILogger
     {
         #region 变量
-
-        private static readonly string userLogPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 
         #endregion
 
@@ -23,7 +21,7 @@
         /// </summary>
         /// <param name="indicator">日志所针对的指标对象。</param>
         /// <param name="path">日志文件基础路径，默认为null。</param>
-        public Logger2(Indicator indicator, string path = null)
+        public Logger(Indicator indicator, string path = null)
         {
             Name = GetLoggerName(indicator);
             FileName = GetLogFileName(path);

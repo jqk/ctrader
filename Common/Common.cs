@@ -1,5 +1,7 @@
 ﻿namespace Notadream
 {
+    using System;
+
     using cAlgo.API;
 
     /// <summary>
@@ -115,7 +117,7 @@
         /// <param name="bars">计算所依据的bar集合。</param>
         /// <param name="pipSize">一单位货币包含点的数量。默认为0，表示返回点数，否则返回价格。</param>
         /// <param name="count">计算bar的数量，默认为10。</param>
-        /// <param name="factor">距离因子，默认为5。</param>
+        /// <param name="factor">距离分散因子，默认为5。</param>
         /// <returns>距离点数或价格。</returns>
         public static double GetDrawDistance(Bars bars, double pipSize = 0, int count = 10, int factor = 5)
         {
@@ -142,6 +144,24 @@
             avg /= pipSize > 0 ? pipSize * count : count;
 
             return avg / factor;
+        }
+
+        /// <summary>
+        /// 格式化周期时间字符串。
+        /// </summary>
+        /// <param name="time">周期时间。</param>
+        /// <param name="toShort">是否为短格式。默认为true。短格式无年份。</param>
+        /// <returns>周期时间字符串。</returns>
+        public static string FormatTimeFrame(DateTime time, bool toShort = true)
+        {
+            if (toShort)
+            {
+                return time.ToString("MM-dd HH:mm");
+            }
+            else
+            {
+                return time.ToString("yyyy-MM-dd HH:mm");
+            }
         }
     }
 }

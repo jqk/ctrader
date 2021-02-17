@@ -15,7 +15,7 @@
         /// <returns>日志对象。</returns>
         public static ILogger GetLogger(Indicator indicator, string path = null)
         {
-            return new Logger2(indicator, path);
+            return new Logger(indicator, path);
         }
     }
 }

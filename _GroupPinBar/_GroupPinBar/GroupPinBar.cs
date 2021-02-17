@@ -8,7 +8,6 @@
     /// Group Pin Bar指标。
     /// </summary>
     [Indicator(IsOverlay = true, TimeZone = TimeZones.UTC, AccessRights = AccessRights.FullAccess)]
-    //[Indicator(IsOverlay = true, TimeZone = TimeZones.UTC, AccessRights = AccessRights.FileSystem)]
     public class GroupPinBar : Indicator
     {
         #region 变量

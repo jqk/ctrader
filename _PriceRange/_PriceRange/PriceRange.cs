@@ -28,11 +28,6 @@
         /// </summary>
         private int startIndex;
 
-        /// <summary>
-        /// 上次计算的周期下标，避免对当前周期重复计算。
-        /// </summary>
-        private int lastIndex = -1;
-
         #region 参数
 
         /// <summary>
@@ -112,9 +107,8 @@
         {
             // 判断以下这些条件，说明顺序与代码判断顺序可能不同。
             // * 在指定的周期数之前不执行。
-            // * 已执行的bar不再执行。
             // * 参数不合法不执行。
-            var shouldNotRun = !parameterIsValid || index < startIndex || index == lastIndex;
+            var shouldNotRun = !parameterIsValid || index < startIndex;
             if (shouldNotRun)
             {
                 return;
@@ -140,16 +134,19 @@
                 // 输出柱体核心高度。
                 BodyHeightResult[index] = bodyHeight;
 
+                var first = true;
+
                 // 判断是否为十字星，并输出。
                 var percent = bodyHeight * 100 / barHeight;
                 if (percent <= CrossPercent)
                 {   
-                    CrossStar[index] = barHeight + Common.GetDrawDistance(Bars, Symbol.PipSize);
-                    var time = bar.OpenTime.ToString("MM-dd HH:mm");
-                    logger.Info("Cross Star at [{0}], height = {1:F1}, percent = {2:F1}%", time, barHeight, percent);
+                    CrossStar[index] = GetDrawPosition(barHeight, first);
+                    first = false;
+                    var time = Common.FormatTimeFrame(bar.OpenTime);
+                    logger.Info("CrsStr at [{0}], height = {1:F1}, percent = {2:F1}%", time, barHeight, percent);
                 }
 
-                double openDistance, closeDistance, coreHeight;
+                double openDistance, closeDistance, hammerHeight;
 
                 if (bar.Open < bar.Close)
                 {
@@ -162,24 +159,21 @@
                     closeDistance = bar.High - bar.Close;
                 }
 
-                // 选短的。
-                coreHeight = (openDistance > closeDistance ? closeDistance : openDistance) / Symbol.PipSize;
+                // 锤头选短的。
+                hammerHeight = (openDistance > closeDistance ? closeDistance : openDistance) / Symbol.PipSize;
 
                 // 判断是否为PinBar并输出。
-                percent = coreHeight * 100 / barHeight;
+                percent = hammerHeight * 100 / barHeight;
                 if (percent <= PinPercent)
                 {
-                    PinBar[index] = barHeight + Common.GetDrawDistance(Bars, Symbol.PipSize) * 2.5;
-                    var time = bar.OpenTime.ToString("MM-dd HH:mm");
-                    logger.Info("Pin Bar at [{0}], height = {1:F1}, percent = {2:F1}%", time, barHeight, percent);
+                    PinBar[index] = GetDrawPosition(barHeight, first);
+                    var time = Common.FormatTimeFrame(bar.OpenTime);
+                    logger.Info("PinBar at [{0}], height = {1:F1}, percent = {2:F1}%", time, barHeight, percent);
                 }
             }
 
-            // 输出。
+            // 输出水平高度。
             Level[index] = MinHeight;
-
-            // 记录已执行的bar位置。
-            lastIndex = index;
         }
 
         /// <summary>
@@ -193,6 +187,18 @@
             parameterIsValid = startIndex != Common.IndexNotFound;
 
             logger = LogManager.GetLogger(this);
+        }
+
+        /// <summary>
+        /// 获得画点的位置。
+        /// </summary>
+        /// <param name="barHeight">柱体高度。</param>
+        /// <param name="first">是否是第一个点。</param>
+        /// <returns>画点的位置。</returns>
+        private double GetDrawPosition(double barHeight, bool first)
+        {
+            var rate = first ? 1 : 2.5;
+            return barHeight + (Common.GetDrawDistance(Bars, Symbol.PipSize) * rate);
         }
     }
 }
