@@ -28,12 +28,17 @@
         /// </summary>
         private int startIndex;
 
+        /// <summary>
+        /// 上次计算的周期下标，避免对当前周期重复计算。
+        /// </summary>
+        private int lastIndex = -1;
+
         #region 参数
 
         /// <summary>
         /// 需计算的周期数量，等于0表示不限制。
         /// </summary>
-        [Parameter(DefaultValue = 500, MinValue = 0)]
+        [Parameter(DefaultValue = 200, MinValue = 0)]
         public int BarCount { get; set; }
 
         /// <summary>
@@ -51,7 +56,7 @@
         /// <summary>
         /// 十字星中bar的核心高度与整体高度的百分比。
         /// </summary>
-        [Parameter(DefaultValue = 10, MinValue = 1, MaxValue = 20)]
+        [Parameter(DefaultValue = 8, MinValue = 1, MaxValue = 20)]
         public int CrossPercent { get; set; }
 
         /// <summary>
@@ -59,6 +64,12 @@
         /// </summary>
         [Parameter(DefaultValue = 25, MinValue = 1, MaxValue = 40)]
         public int PinPercent { get; set; }
+
+        /// <summary>
+        /// 是否记录所有周期。为false只记录LastBar。
+        /// </summary>
+        [Parameter(DefaultValue = true)]
+        public bool LogAllBars { get; set; }
 
         #endregion
 
@@ -75,12 +86,6 @@
         /// </summary>
         [Output("Bar Height", LineColor = "Yellow", PlotType = PlotType.Histogram, Thickness = 1)]
         public IndicatorDataSeries BarHeightResult { get; set; }
-
-        /// <summary>
-        /// 符合要求的整体最小高度。
-        /// </summary>
-        [Output("Min Height", LineColor = "LightBlue", LineStyle = LineStyle.Dots)]
-        public IndicatorDataSeries Level { get; set; }
 
         /// <summary>
         /// 是否是十字星。要满足<see cref="BarHeightResult"/>大于等于<see cref="MinHeight"/>，
@@ -106,9 +111,10 @@
         public override void Calculate(int index)
         {
             // 判断以下这些条件，说明顺序与代码判断顺序可能不同。
+            // * 已执行的bar不再执行。
             // * 在指定的周期数之前不执行。
             // * 参数不合法不执行。
-            var shouldNotRun = !parameterIsValid || index < startIndex;
+            var shouldNotRun = !parameterIsValid || index < startIndex || index == lastIndex;
             if (shouldNotRun)
             {
                 return;
@@ -172,8 +178,7 @@
                 }
             }
 
-            // 输出水平高度。
-            Level[index] = MinHeight;
+            lastIndex = index;
         }
 
         /// <summary>
@@ -186,7 +191,7 @@
             // 有足够的序列供计算。
             parameterIsValid = startIndex != Common.IndexNotFound;
 
-            logger = LogManager.GetLogger(this);
+            logger = LogManager.GetLogger(this, LogAllBars);
         }
 
         /// <summary>
@@ -197,6 +202,8 @@
         /// <returns>画点的位置。</returns>
         private double GetDrawPosition(double barHeight, bool first)
         {
+            // 当只有第一个时，距离不要太远。
+            // 当有第二个时，不要与第一个重叠。
             var rate = first ? 1 : 2.5;
             return barHeight + (Common.GetDrawDistance(Bars, Symbol.PipSize) * rate);
         }

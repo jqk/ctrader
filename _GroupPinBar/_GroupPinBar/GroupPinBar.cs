@@ -64,6 +64,12 @@
         [Parameter(DefaultValue = 30, MinValue = 0, MaxValue = 100)]
         public int Percent { get; set; }
 
+        /// <summary>
+        /// 是否记录所有周期。为false只记录LastBar。
+        /// </summary>
+        [Parameter(DefaultValue = true)]
+        public bool LogAllBars { get; set; }
+
         #endregion
 
         #endregion
@@ -115,7 +121,7 @@
             parameterIsValid = startIndex != Common.IndexNotFound;
             minHeight = MinPips * Symbol.PipValue;
 
-            logger = LogManager.GetLogger(this);
+            logger = LogManager.GetLogger(this, LogAllBars);
         }
 
         /// <summary>

@@ -14,18 +14,40 @@
     {
         #region 变量
 
+        /// <summary>
+        /// 是否记录所有周期。默认为true。为false只记录LastBar。
+        /// </summary>
+        private bool logAllBars;
+
+        /// <summary>
+        /// 日志对应的指标对象。
+        /// </summary>
+        private Indicator indicator;
+
         #endregion
 
         /// <summary>
         /// 创建日志对象。
         /// </summary>
         /// <param name="indicator">日志所针对的指标对象。</param>
-        /// <param name="path">日志文件基础路径，默认为null。</param>
-        public Logger(Indicator indicator, string path = null)
+        /// <param name="logAllBars">是否记录所有周期。默认为true。为false只记录LastBar。</param>
+        /// <param name="path">日志文件基础路径，默认为null，使用用户文档路径。</param>
+        public Logger(Indicator indicator, bool logAllBars, string path = null)
         {
+            this.logAllBars = logAllBars;
+            this.indicator = indicator;
             Name = GetLoggerName(indicator);
             FileName = GetLogFileName(path);
             LogStartInfo(indicator);
+        }
+
+        /// <summary>
+        /// 创建日志对象。
+        /// </summary>
+        /// <param name="indicator">日志所针对的指标对象。</param>
+        /// <param name="path">日志文件基础路径，默认为null，使用用户文档路径。</param>
+        public Logger(Indicator indicator, string path = null) : this(indicator, true)
+        {
         }
 
         #region 属性
@@ -40,6 +62,14 @@
         /// </summary>
         public string Name { get; private set; }
 
+        /// <summary>
+        /// 是否可以执行记录日志的操作。
+        /// </summary>
+        private bool CanLog
+        {
+            get { return logAllBars || indicator.IsLastBar; }
+        }
+
         #endregion
 
         #region 函数
@@ -52,6 +82,11 @@
         /// <param name="message">信息。</param>
         public void Info(string message)
         {
+            if (!CanLog)
+            {
+                return;
+            }
+
             var id = Thread.CurrentThread.ManagedThreadId;
             var time = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
             var s = string.Format("{0} {1:D4} - {2}", time, id, message);
@@ -71,8 +106,11 @@
         /// <param name="args">信息参数列表。</param>
         public void Info(string message, params object[] args)
         {
-            var s = string.Format(message, args);
-            Info(s);
+            if (CanLog)
+            {
+                var s = string.Format(message, args);
+                Info(s);
+            }
         }
 
         #endregion
@@ -156,7 +194,13 @@
                 sb.Append(" without parameter.");
             }
 
+            var logAll = logAllBars;
+            // 无论logAllBars具体值为何，均让当前函数可以记录初始日志。
+            logAllBars = true;
+
             Info(sb.ToString());
+
+            logAllBars = logAll;
         }
 
         #endregion
