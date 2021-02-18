@@ -30,6 +30,8 @@
         /// </summary>
         private int lastIndex = -1;
 
+        private bool timeFrameOk;
+
         #region 参数
 
         /// <summary>
@@ -65,6 +67,34 @@
                 return;
             }
 
+            if (timeFrameOk)
+            {
+                CheckAndDrawWeekSeperator(index);
+            }
+
+            lastIndex = index;
+        }
+
+        /// <summary>
+        /// 初始化指标。
+        /// </summary>
+        protected override void Initialize()
+        {
+            startIndex = Common.GetStartBarIndex(Bars.Count, BarCount);
+            // 大于日周期的不画，小于日周期的必画。只有日周期自身可选择是否画分隔线。
+            timeFrameOk = TimeFrame < TimeFrame.Daily || (TimeFrame == TimeFrame.Daily && DrawForDaily);
+
+            // 有足够的序列供计算，且周期正确。
+            parameterIsValid = startIndex != Common.IndexNotFound;
+        }
+
+        /// <summary>
+        /// 检查给定的bar，确认和其前面的bar之间是否是周分隔，如是则画分隔线。
+        /// </summary>
+        /// <param name="index">给定bar的下标。</param>
+        /// <returns>是否是周分隔。</returns>
+        private bool CheckAndDrawWeekSeperator(int index)
+        {
             // 当前bar与上一个bar之间相差的秒数。
             var seconds = (int)(Bars.OpenTimes[index] - Bars.OpenTimes[index - 1]).TotalSeconds;
 
@@ -77,22 +107,10 @@
                 var drawTime = Bars.OpenTimes[index - 1].AddSeconds(seconds);
 
                 Chart.DrawVerticalLine("WS[" + index + "]", drawTime, Color.Yellow, 1, LineStyle.Dots);
+                return true;
             }
 
-            lastIndex = index;
-        }
-
-        /// <summary>
-        /// 初始化指标。
-        /// </summary>
-        protected override void Initialize()
-        {
-            startIndex = Common.GetStartBarIndex(Bars.Count, BarCount);
-
-            var timeFrameOk = TimeFrame < TimeFrame.Daily || (TimeFrame == TimeFrame.Daily && DrawForDaily);
-
-            // 有足够的序列供计算，且周期正确。
-            parameterIsValid = startIndex != Common.IndexNotFound && timeFrameOk;
+            return false;
         }
     }
 }
