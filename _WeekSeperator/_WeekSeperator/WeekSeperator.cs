@@ -42,7 +42,7 @@
         /// 是否为日周期画分隔线。
         /// <para>大于日周期的不画，小于日周期的必画。只有日周期自身可选择是否画分隔线。</para>
         /// </summary>
-        [Parameter(DefaultValue = true)]
+        [Parameter(DefaultValue = false)]
         public bool DrawForDaily { get; set; }
 
         #endregion

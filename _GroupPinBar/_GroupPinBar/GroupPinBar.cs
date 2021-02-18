@@ -67,7 +67,7 @@
         /// <summary>
         /// 是否记录所有周期。为false只记录LastBar。
         /// </summary>
-        [Parameter(DefaultValue = true)]
+        [Parameter(DefaultValue = false)]
         public bool LogAllBars { get; set; }
 
         #endregion
