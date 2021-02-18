@@ -30,6 +30,9 @@
         /// </summary>
         private int lastIndex = -1;
 
+        /// <summary>
+        /// 周期是否需要画分隔线。
+        /// </summary>
         private bool timeFrameOk;
 
         #region 参数
@@ -46,6 +49,12 @@
         /// </summary>
         [Parameter(DefaultValue = false)]
         public bool DrawForDaily { get; set; }
+
+        /// <summary>
+        /// 当<see cref="DrawForDaily"/>为false时，是否为最后一组日周期画分隔线。
+        /// </summary>
+        [Parameter(DefaultValue = true)]
+        public bool DrawForLastDaily { get; set; }
 
         #endregion
 
@@ -70,6 +79,17 @@
             if (timeFrameOk)
             {
                 CheckAndDrawWeekSeperator(index);
+            }
+            else if (IsLastBar && DrawForLastDaily && TimeFrame == TimeFrame.Daily)
+            {
+                // 日图时，对于最后一组（6个）bar，从最近的日期，尝试画一根分隔线即结束。
+                for (int i = index; i > index - 5; i--)
+                {
+                    if (CheckAndDrawWeekSeperator(i))
+                    {
+                        break;
+                    }
+                }
             }
 
             lastIndex = index;
