@@ -11,6 +11,17 @@
     [Indicator(IsOverlay = true, TimeZone = TimeZones.UTC, AccessRights = AccessRights.FullAccess)]
     public class CommonTest : IndicatorBase
     {
+        #region 构造函数
+
+        /// <summary>
+        /// 构造函数，仅为提供指标版本号。
+        /// </summary>
+        public CommonTest() : base("1.1.1")
+        {
+        }
+
+        #endregion
+
         #region 参数，基类中定义无效
 
         /// <summary>
@@ -24,14 +35,6 @@
         /// </summary>
         [Parameter(DefaultValue = true)]
         public bool LogAllBars { get; set; }
-
-        #endregion
-
-        #region 构造函数
-
-        public CommonTest() : base("1.1.1")
-        {
-        }
 
         #endregion
 
