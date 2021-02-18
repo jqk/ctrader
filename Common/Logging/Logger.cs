@@ -161,7 +161,7 @@
             var indicatorBase = indicator as IndicatorBase;
             if (indicatorBase != null)
             {
-                sb.Append("version [");
+                sb.Append(" version [");
                 sb.Append(indicatorBase.Version);
                 sb.Append("]");
             }

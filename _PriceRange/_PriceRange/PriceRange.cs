@@ -9,31 +9,29 @@
     /// 显示每个bar实体和整体长度的指标。
     /// </summary>
     [Indicator(IsOverlay = false, TimeZone = TimeZones.UTC, AccessRights = AccessRights.FullAccess)]
-    public class PriceRange : Indicator
+    public class PriceRange : IndicatorBase
     {
         #region 变量
-
-        /// <summary>
-        /// 日志对象。
-        /// </summary>
-        private ILogger logger;
 
         /// <summary>
         /// 参数是否有效。
         /// </summary>
         private bool parameterIsValid = true;
 
-        /// <summary>
-        /// 开始执行计算的周期下标。
-        /// </summary>
-        private int startIndex;
+        #endregion
+
+        #region 构造函数
 
         /// <summary>
-        /// 上次计算的周期下标，避免对当前周期重复计算。
+        /// 构造函数，仅为提供指标版本号。
         /// </summary>
-        private int lastIndex = -1;
+        public PriceRange() : base("1.1.1")
+        {
+        }
 
-        #region 参数
+        #endregion
+
+        #region 参数，基类中定义无效
 
         /// <summary>
         /// 需计算的周期数量，等于0表示不限制。
@@ -102,7 +100,7 @@
 
         #endregion
 
-        #endregion
+        #region 函数
 
         /// <summary>
         /// 对当前序列进行指标计算。
@@ -207,5 +205,7 @@
             var rate = first ? 1 : 2.5;
             return barHeight + (Common.GetDrawDistance(Bars, Symbol.PipSize) * rate);
         }
+
+        #endregion
     }
 }

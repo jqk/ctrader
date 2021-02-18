@@ -8,14 +8,9 @@
     /// Group Pin Bar指标。
     /// </summary>
     [Indicator(IsOverlay = true, TimeZone = TimeZones.UTC, AccessRights = AccessRights.FullAccess)]
-    public class GroupPinBar : Indicator
+    public class GroupPinBar : IndicatorBase
     {
         #region 变量
-
-        /// <summary>
-        /// 日志对象。
-        /// </summary>
-        private ILogger logger;
 
         /// <summary>
         /// 参数是否有效。
@@ -23,26 +18,29 @@
         private bool parameterIsValid = true;
 
         /// <summary>
-        /// 开始执行计算的周期下标。
-        /// </summary>
-        private int startIndex;
-
-        /// <summary>
-        /// 上次计算的周期下标，避免对当前周期重复计算。
-        /// </summary>
-        private int lastIndex = -1;
-
-        /// <summary>
         /// 以价格表示的组合的最小高度。
         /// </summary>
         private double minHeight;
 
-        #region 参数
+        #endregion
+
+        #region 构造函数
+
+        /// <summary>
+        /// 构造函数，仅为提供指标版本号。
+        /// </summary>
+        public GroupPinBar() : base("1.1.1")
+        {
+        }
+
+        #endregion
+
+        #region 参数，基类中定义无效
 
         /// <summary>
         /// 需计算的周期数量，等于0表示不限制。
         /// </summary>
-        [Parameter(DefaultValue = 500, MinValue = 0, MaxValue = int.MaxValue)]
+        [Parameter(DefaultValue = 200, MinValue = 0, MaxValue = int.MaxValue)]
         public int BarCount { get; set; }
 
         /// <summary>
@@ -72,7 +70,7 @@
 
         #endregion
 
-        #endregion
+        #region 函数
 
         /// <summary>
         /// 对当前序列进行指标计算。
@@ -191,6 +189,8 @@
 
             logger.Info("{0} time1 = [{1}], time2 = [{2}]", name, time1.ToString("yyyy-MM-dd HH:mm"), time2.ToString("yyyy-MM-dd HH:mm"));
         }
+
+        #endregion
 
         #region 内部类
 
