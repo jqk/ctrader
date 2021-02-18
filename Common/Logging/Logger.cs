@@ -157,6 +157,15 @@
             var sb = new StringBuilder();
             sb.Append("Indicator ");
             sb.Append(Name);
+
+            var indicatorBase = indicator as IndicatorBase;
+            if (indicatorBase != null)
+            {
+                sb.Append("version [");
+                sb.Append(indicatorBase.Version);
+                sb.Append("]");
+            }
+
             // 与参数列表使用": "分隔，即2个字符。
             sb.Append(" is started: ");
 
@@ -199,7 +208,7 @@
             logAllBars = true;
 
             Info(sb.ToString());
-
+            // 恢复原值。
             logAllBars = logAll;
         }
 

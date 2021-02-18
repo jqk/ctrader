@@ -60,6 +60,9 @@
     <Compile Include="..\..\Common\Common.cs">
       <Link>Common.cs</Link>
     </Compile>
+    <Compile Include="..\..\Common\IndicatorBase.cs">
+      <Link>IndicatorBase.cs</Link>
+    </Compile>
     <Compile Include="..\..\Common\Logging\ILogger.cs">
       <Link>Logging\ILogger.cs</Link>
     </Compile>

@@ -5,24 +5,13 @@
 
     /// <summary>
     /// 用于直接在源码级别测试Common项目的类。
+    /// <para>基类<see cref="IndicatorBase"/>中定义<see cref="ParameterAttribute"/>是无效的，
+    /// 只能在当前实现类中定义，所以无法统一提取。</para>
     /// </summary>
     [Indicator(IsOverlay = true, TimeZone = TimeZones.UTC, AccessRights = AccessRights.FullAccess)]
-    public class CommonTest : Indicator
+    public class CommonTest : IndicatorBase
     {
-        /// <summary>
-        /// 日志对象。
-        /// </summary>
-        private ILogger logger;
-
-        /// <summary>
-        /// 开始执行计算的周期下标。
-        /// </summary>
-        private int startIndex;
-
-        /// <summary>
-        /// 上次计算的周期下标，避免对当前周期重复计算。
-        /// </summary>
-        private int lastIndex = -1;
+        #region 参数，基类中定义无效
 
         /// <summary>
         /// 需计算的周期数量，等于0表示不限制。
@@ -35,6 +24,18 @@
         /// </summary>
         [Parameter(DefaultValue = true)]
         public bool LogAllBars { get; set; }
+
+        #endregion
+
+        #region 构造函数
+
+        public CommonTest() : base("1.1.1")
+        {
+        }
+
+        #endregion
+
+        #region 函数
 
         /// <summary>
         /// 对当前序列进行指标计算。
@@ -67,5 +68,7 @@
             startIndex = Common.GetStartBarIndex(Bars.Count, BarCount);
             logger = LogManager.GetLogger(this, LogAllBars);
         }
+
+        #endregion
     }
 }
