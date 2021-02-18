@@ -40,6 +40,11 @@
         /// <param name="path">日志文件基础路径，默认为null，使用用户文档路径。</param>
         public Logger(Indicator indicator, bool logAllBars, string path = null)
         {
+            if (indicator == null)
+            {
+                throw new ArgumentNullException("indicator can not be null.");
+            }
+
             this.logAllBars = logAllBars;
             this.indicator = indicator;
             Name = GetLoggerName(indicator);
@@ -90,14 +95,34 @@
         /// <param name="message">信息。</param>
         public void Info(string message)
         {
-            if (!CanLog)
+            if (CanLog)
             {
-                return;
+                WriteLog(message);
             }
+        }
 
-            var id = Thread.CurrentThread.ManagedThreadId;
+        /// <summary>
+        /// 记录Info级别的日志。
+        /// </summary>
+        /// <param name="message">带格式的信息。</param>
+        /// <param name="args">信息参数列表。</param>
+        public void Info(string message, params object[] args)
+        {
+            if (CanLog)
+            {
+                WriteLog(string.Format(message, args));
+            }
+        }
+
+        /// <summary>
+        /// 记录Info级别的日志。
+        /// </summary>
+        /// <param name="message">信息。</param>
+        private void WriteLog(string message)
+        {
+            var threadId = Thread.CurrentThread.ManagedThreadId;
             var time = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
-            var s = string.Format("{0} {1:D4} - {2}", time, id, message);
+            var s = string.Format("{0} {1:D4} - {2}", time, threadId, message);
 
             if (FileName != string.Empty)
             {
@@ -111,20 +136,6 @@
             else
             {
                 indicator.Print("Not log to file: " + s);
-            }
-        }
-
-        /// <summary>
-        /// 记录Info级别的日志。
-        /// </summary>
-        /// <param name="message">带格式的信息。</param>
-        /// <param name="args">信息参数列表。</param>
-        public void Info(string message, params object[] args)
-        {
-            if (CanLog)
-            {
-                var s = string.Format(message, args);
-                Info(s);
             }
         }
 
@@ -221,13 +232,7 @@
                 sb.Append(errorMessage);
             }
 
-            var logAll = logAllBars;
-            // 无论logAllBars具体值为何，均让当前函数可以记录初始日志。
-            logAllBars = true;
-
-            Info(sb.ToString());
-            // 恢复原值。
-            logAllBars = logAll;
+            WriteLog(sb.ToString());
         }
 
         /// <summary>

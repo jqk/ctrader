@@ -40,6 +40,12 @@
         public int BarCount { get; set; }
 
         /// <summary>
+        /// 是否记录所有周期。为false只记录LastBar。
+        /// </summary>
+        [Parameter(DefaultValue = false)]
+        public bool LogAllBars { get; set; }
+
+        /// <summary>
         /// 最小bar长度。
         /// </summary>
         [Parameter(DefaultValue = 15, MinValue = 0)]
@@ -62,12 +68,6 @@
         /// </summary>
         [Parameter(DefaultValue = 25, MinValue = 1, MaxValue = 40)]
         public int PinPercent { get; set; }
-
-        /// <summary>
-        /// 是否记录所有周期。为false只记录LastBar。
-        /// </summary>
-        [Parameter(DefaultValue = false)]
-        public bool LogAllBars { get; set; }
 
         #endregion
 

@@ -40,8 +40,14 @@
         /// <summary>
         /// 需计算的周期数量，等于0表示不限制。
         /// </summary>
-        [Parameter(DefaultValue = 200, MinValue = 0, MaxValue = int.MaxValue)]
+        [Parameter(DefaultValue = 200, MinValue = 0)]
         public int BarCount { get; set; }
+
+        /// <summary>
+        /// 是否记录所有周期。为false只记录LastBar。
+        /// </summary>
+        [Parameter(DefaultValue = false)]
+        public bool LogAllBars { get; set; }
 
         /// <summary>
         /// 组合中元素的数量，大于0。
@@ -61,12 +67,6 @@
         /// </summary>
         [Parameter(DefaultValue = 30, MinValue = 0, MaxValue = 100)]
         public int Percent { get; set; }
-
-        /// <summary>
-        /// 是否记录所有周期。为false只记录LastBar。
-        /// </summary>
-        [Parameter(DefaultValue = false)]
-        public bool LogAllBars { get; set; }
 
         #endregion
 

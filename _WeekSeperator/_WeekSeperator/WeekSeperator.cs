@@ -33,7 +33,7 @@
         /// <summary>
         /// 构造函数，仅为提供指标版本号。
         /// </summary>
-        public WeekSeperator() : base("1.1.0")
+        public WeekSeperator() : base("1.1.1")
         {
         }
 
@@ -44,13 +44,13 @@
         /// <summary>
         /// 需计算的周期数量，等于0表示不限制。
         /// </summary>
-        [Parameter(DefaultValue = 100, MinValue = 0, MaxValue = int.MaxValue)]
+        [Parameter(DefaultValue = 200, MinValue = 0, MaxValue = int.MaxValue)]
         public int BarCount { get; set; }
 
         /// <summary>
         /// 是否记录所有周期。为false只记录LastBar。
         /// </summary>
-        [Parameter(DefaultValue = true)]
+        [Parameter(DefaultValue = false)]
         public bool LogAllBars { get; set; }
 
         /// <summary>

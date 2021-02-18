@@ -1,5 +1,7 @@
 ﻿namespace Notadream
 {
+    using System;
+
     using cAlgo.API;
     using Logging;
 
@@ -30,6 +32,11 @@
         /// <param name="version">指标版本。</param>
         protected IndicatorBase(string version)
         {
+            if (string.IsNullOrWhiteSpace(version))
+            {
+                throw new ArgumentNullException("version can not be null or empty string.");
+            }
+
             Version = version;
         }
 
