@@ -16,7 +16,7 @@
         /// <summary>
         /// 构造函数，仅为提供指标版本号。
         /// </summary>
-        public CommonTest() : base("1.1.1")
+        public CommonTest() : base("1.1.0")
         {
         }
 

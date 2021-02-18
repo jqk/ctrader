@@ -9,6 +9,10 @@
 
     /// <summary>
     /// 供指标使用的日志类。
+    /// <para>1，因为要建立文件，所以指标权限至少要求<see cref="AccessRights.FileSystem"/>。</para>
+    /// <para>2，又因为要动态获取指标参数信息，所以要求权限为<see cref="AccessRights.FullAccess"/>。</para>
+    /// <para>不满足第1点，只能通过Print()输出到屏幕。不满足第2点，仅获取不到参数信息，不影响其它使用。
+    /// </para>
     /// </summary>
     public class Logger : ILogger
     {
@@ -25,6 +29,8 @@
         private Indicator indicator;
 
         #endregion
+
+        #region 构造函数
 
         /// <summary>
         /// 创建日志对象。
@@ -49,6 +55,8 @@
         public Logger(Indicator indicator, string path = null) : this(indicator, true)
         {
         }
+
+        #endregion
 
         #region 属性
 
@@ -91,11 +99,18 @@
             var time = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
             var s = string.Format("{0} {1:D4} - {2}", time, id, message);
 
-            using (StreamWriter sw = new StreamWriter(FileName, true, Encoding.UTF8))
+            if (FileName != string.Empty)
             {
-                sw.WriteLine(s);
-                sw.Flush();
-                sw.Close();
+                using (StreamWriter sw = new StreamWriter(FileName, true, Encoding.UTF8))
+                {
+                    sw.WriteLine(s);
+                    sw.Flush();
+                    sw.Close();
+                }
+            }
+            else
+            {
+                indicator.Print("Not log to file: " + s);
             }
         }
 
@@ -134,18 +149,26 @@
         /// <returns>如未抛出异常，则为完整文件名。</returns>
         private string GetLogFileName(string path)
         {
-            if (path == null)
+            try
             {
-                path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\cAlgo\\logs";
-            }
+                if (path == null)
+                {
+                    path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\cAlgo\\logs";
+                }
 
-            if (!Directory.Exists(path))
+                if (!Directory.Exists(path))
+                {
+                    Directory.CreateDirectory(path);
+                }
+
+                var pathInfo = new DirectoryInfo(path);
+                return pathInfo.FullName + "\\" + Name + ".log";
+            }
+            catch (Exception e)
             {
-                Directory.CreateDirectory(path);
+                indicator.Print("create log file failed: " + e.ToString());
+                return string.Empty;
             }
-
-            var pathInfo = new DirectoryInfo(path);
-            return pathInfo.FullName + "\\" + Name + ".log";
         }
 
         /// <summary>
@@ -158,6 +181,7 @@
             sb.Append("Indicator ");
             sb.Append(Name);
 
+            // 如果是IndicatorBase，则添加版本信息。
             var indicatorBase = indicator as IndicatorBase;
             if (indicatorBase != null)
             {
@@ -171,36 +195,30 @@
 
             // 记录当前的长度。如果遍历properties后长度无变化，说明没有定义输入属性。
             var length = sb.Length;
-            var properties = indicator.GetType().GetProperties();
-            var typeOfParameter = typeof(ParameterAttribute);
-            var typeOfString = typeof(string);
+            var errorMessage = GetParameterInfo(sb);
 
-            foreach (var property in properties)
+            if (errorMessage == string.Empty)
             {
-                // 这里只做一个ParameterAttribute的验证，这里如果要做很多验证，需要好好设计一下，
-                // 千万不要用if else if去链接，会非常难于维护，类似这样的开源项目很多，有兴趣可以去看源码。
-                if (property.IsDefined(typeOfParameter, false))
-                {
-                    var value = property.GetValue(indicator, null);
-                    var useQuotation = value.GetType() == typeOfString;
-                    var valueStart = useQuotation ? "=\"" : "=";
-                    // 每个参数结尾使用", "分隔，即2个字符。
-                    var valueEnd = useQuotation ? "\", " : ", ";
+                // 删除结尾的2个字符，可能是": "，也可能是", "。
+                sb.Remove(sb.Length - 2, 2);
 
-                    sb.Append(property.Name);
-                    sb.Append(valueStart);
-                    sb.Append(value);
-                    sb.Append(valueEnd);
+                // 遍历properties后长度无变化，说明没有定义输入属性。
+                if (sb.Length <= length)
+                {
+                    sb.Append(" without parameter.");
                 }
             }
-
-            // 删除结尾的2个字符，可能是": "，也可能是", "。
-            sb.Remove(sb.Length - 2, 2);
-
-            // 遍历properties后长度无变化，说明没有定义输入属性。
-            if (sb.Length <= length)
+            else
             {
-                sb.Append(" without parameter.");
+                // 去除可能在获取参数信息过程中添加的字符串。
+                var len = sb.Length - length;
+                if (len > 0)
+                {
+                    sb.Remove(length, len);
+                }
+
+                sb.Append("get indicator parameter info failed: ");
+                sb.Append(errorMessage);
             }
 
             var logAll = logAllBars;
@@ -210,6 +228,48 @@
             Info(sb.ToString());
             // 恢复原值。
             logAllBars = logAll;
+        }
+
+        /// <summary>
+        /// 获取指标的参数信息。
+        /// </summary>
+        /// <param name="sb">准备添加参数信息的字符串对象。</param>
+        /// <returns>如果正常，返回空字符串。否则为异常信息。</returns>
+        private string GetParameterInfo(StringBuilder sb)
+        {
+            var properties = indicator.GetType().GetProperties();
+            var typeOfParameter = typeof(ParameterAttribute);
+            var typeOfString = typeof(string);
+
+            try
+            {
+                foreach (var property in properties)
+                {
+                    // 这里只做一个ParameterAttribute的验证，这里如果要做很多验证，需要好好设计一下，
+                    // 千万不要用if else if去链接，会非常难于维护，类似这样的开源项目很多，有兴趣可以去看源码。
+                    if (property.IsDefined(typeOfParameter, false))
+                    {
+                        // 如果指标权限不是FullAccess，此处将抛出异常。
+                        var value = property.GetValue(indicator, null);
+
+                        var useQuotation = value.GetType() == typeOfString;
+                        var valueStart = useQuotation ? "=\"" : "=";
+                        // 每个参数结尾使用", "分隔，即2个字符。
+                        var valueEnd = useQuotation ? "\", " : ", ";
+
+                        sb.Append(property.Name);
+                        sb.Append(valueStart);
+                        sb.Append(value);
+                        sb.Append(valueEnd);
+                    }
+                }
+
+                return string.Empty;
+            }
+            catch (Exception e)
+            {
+                return e.ToString();
+            }
         }
 
         #endregion
