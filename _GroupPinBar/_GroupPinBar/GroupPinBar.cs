@@ -187,7 +187,10 @@
 
             Chart.DrawRectangle(name, time1, price1, time2, price2, color);
 
-            logger.Info("{0} time1 = [{1}], time2 = [{2}]", name, time1.ToString("yyyy-MM-dd HH:mm"), time2.ToString("yyyy-MM-dd HH:mm"));
+            var format = "yyyy-MM-dd HH:mm";
+
+            logger.Info("{0} start={1}, open[{2}]=[{3}], open[{1}] =[{4}], adjustTo=[{5}], delta={6}", name, start, start - 1, Bars.OpenTimes[start - 1].ToString(format), Bars.OpenTimes[start].ToString(format), time1.ToString(format), adjust1);
+            logger.Info("{0} index={1}, open[{1}]=[{3}], open[{2}] =[{4}], adjustTo=[{5}], delta={6}", name, index, index + 1, Bars.OpenTimes[index].ToString(format), Bars.OpenTimes[index + 1].ToString(format), time2.ToString(format), adjust2);
         }
 
         #endregion
