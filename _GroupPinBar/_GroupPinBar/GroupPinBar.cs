@@ -29,7 +29,7 @@
         /// <summary>
         /// 构造函数，仅为提供指标版本号。
         /// </summary>
-        public GroupPinBar() : base("1.1.1")
+        public GroupPinBar() : base("1.1.2")
         {
         }
 
@@ -88,6 +88,12 @@
                 return;
             }
 
+            // 记录已执行的bar位置。
+            lastIndex = index;
+
+            // 只计算当前K线前面的K线是否符合信号条件。
+            index--;
+
             for (int i = 1; i <= GroupSize; i++)
             {
                 // 确定要计算的第1个bar的位置。index是当前bar的位置。i是本次计算包含的bar数量。
@@ -103,11 +109,11 @@
                     logger.Info("[{0}] [{1}] height = {2:F1}, core = {3:F1}, percent = {4:F1}%", openTime, i, height, core, bar.CorePercent);
 
                     DrawSignal(bar, start, index, i);
+
+                    // 不再画更多的信号，避免屏幕上太乱。
+                    break;
                 }
             }
-
-            // 记录已执行的bar位置。
-            lastIndex = index;
         }
 
         /// <summary>
@@ -189,141 +195,9 @@
 
             var format = "yyyy-MM-dd HH:mm";
 
+            logger.Info("{0} curnt={1}, open=[{2}], isLast={3}", name, Bars.Count - 1, Bars.OpenTimes[Bars.Count - 1].ToString(format), IsLastBar);
             logger.Info("{0} start={1}, open[{2}]=[{3}], open[{1}] =[{4}], adjustTo=[{5}], delta={6}", name, start, start - 1, Bars.OpenTimes[start - 1].ToString(format), Bars.OpenTimes[start].ToString(format), time1.ToString(format), adjust1);
             logger.Info("{0} index={1}, open[{1}]=[{3}], open[{2}] =[{4}], adjustTo=[{5}], delta={6}", name, index, index + 1, Bars.OpenTimes[index].ToString(format), Bars.OpenTimes[index + 1].ToString(format), time2.ToString(format), adjust2);
-        }
-
-        #endregion
-
-        #region 内部类
-
-        /// <summary>
-        /// 将多个（可以是一个）bar组合后的信息。
-        /// </summary>
-        public sealed class GroupBar
-        {
-            /// <summary>
-            /// 创建<see cref="GroupBar"/>对象。
-            /// </summary>
-            /// <param name="high">最高价。</param>
-            /// <param name="low">最低价。</param>
-            /// <param name="open">开盘价。</param>
-            /// <param name="close">收盘价。</param>
-            /// <param name="percent">实体占比。</param>
-            /// <param name="minHeight">实体最小高度。</param>
-            public GroupBar(double high, double low, double open, double close, int percent, double minHeight)
-            {
-                HighPrice = high;
-                LowPrice = low;
-                OpenPrice = open;
-                ClosePrice = close;
-
-                Calculate(percent, minHeight);
-            }
-
-            #region 属性
-
-            /// <summary>
-            /// 组的最高价。
-            /// </summary>
-            public double HighPrice { get; private set; }
-
-            /// <summary>
-            /// 组的最低价。
-            /// </summary>
-            public double LowPrice { get; private set; }
-
-            /// <summary>
-            /// 组的开盘价。
-            /// </summary>
-            public double OpenPrice { get; private set; }
-
-            /// <summary>
-            /// 组的收盘价。
-            /// </summary>
-            public double ClosePrice { get; private set; }
-
-            /// <summary>
-            /// 开盘价和收盘价的较高者。
-            /// </summary>
-            public double UpperPrice { get; private set; }
-
-            /// <summary>
-            /// 开盘价和收盘价的较低者。
-            /// </summary>
-            public double LowerPrice { get; private set; }
-
-            /// <summary>
-            /// 组的高度。
-            /// </summary>
-            public double GroupHeight { get; private set; }
-
-            /// <summary>
-            /// 组内实体的高度。包含近端的影线长度。
-            /// </summary>
-            public double CoreHeight { get; private set; }
-
-            /// <summary>
-            /// 组内实体的百分比。
-            /// </summary>
-            public double CorePercent { get; private set; }
-
-            /// <summary>
-            /// 指示上升还是下降。不只由开盘、收盘价决定，还是其到对端距离有关。
-            /// </summary>
-            public bool IsUp { get; private set; }
-
-            /// <summary>
-            /// 是否是合格的信号。
-            /// </summary>
-            public bool IsSignal { get; private set; }
-
-            #endregion
-
-            /// <summary>
-            /// 执行计算。
-            /// </summary>
-            /// <param name="percent">实体占比。</param>
-            /// <param name="minHeight">实体最小高度。</param>
-            private void Calculate(int percent, double minHeight)
-            {
-                if (ClosePrice > OpenPrice)
-                {
-                    // 收盘价大于开盘价，较高价为收盘价，较低价为开盘价。
-                    UpperPrice = ClosePrice;
-                    LowerPrice = OpenPrice;
-                }
-                else
-                {
-                    // 收盘价大于开盘价，较高价为开盘价，较低价为收盘价。
-                    UpperPrice = OpenPrice;
-                    LowerPrice = ClosePrice;
-                }
-
-                // 较高价到组最低价的距离。
-                var upperToLow = UpperPrice - LowPrice;
-                // 较低价到组最高价的距离。
-                var lowerToHigh = HighPrice - LowerPrice;
-
-                // 组合后的实体高度，包含近端引线。
-                // upperToLow小表示实体更靠近低端，是倒锤体。
-                // lowerToHigh小表示实体更靠近高端，是正锤体。
-                if (upperToLow < lowerToHigh)
-                {
-                    CoreHeight = upperToLow;
-                    IsUp = false;
-                }
-                else
-                {
-                    CoreHeight = lowerToHigh;
-                    IsUp = true;
-                }
-
-                GroupHeight = HighPrice - LowPrice;
-                CorePercent = CoreHeight * 100 / GroupHeight;
-
-                IsSignal = GroupHeight >= minHeight && CorePercent <= percent;
-            }
         }
 
         #endregion

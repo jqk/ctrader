@@ -115,7 +115,7 @@
         }
 
         /// <summary>
-        /// 记录Info级别的日志。
+        /// 将一行文本信息增加记录时间后写入日志文件。
         /// </summary>
         /// <param name="message">信息。</param>
         private void WriteLog(string message)
@@ -124,18 +124,27 @@
             var time = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
             var s = string.Format("{0} {1:D4} - {2}", time, threadId, message);
 
+            WriteLine(s);
+        }
+
+        /// <summary>
+        /// 将一行文本信息写入日志文件。
+        /// </summary>
+        /// <param name="message">待写入的文本信息。</param>
+        private void WriteLine(string message)
+        {
             if (FileName != string.Empty)
             {
                 using (StreamWriter sw = new StreamWriter(FileName, true, Encoding.UTF8))
                 {
-                    sw.WriteLine(s);
+                    sw.WriteLine(message);
                     sw.Flush();
                     sw.Close();
                 }
             }
             else
             {
-                indicator.Print("Not log to file: " + s);
+                indicator.Print("Not log to file: " + message);
             }
         }
 
@@ -188,6 +197,9 @@
         /// <param name="indicator">指标对象。</param>
         private void LogStartInfo(Indicator indicator)
         {
+            WriteLine("");
+            WriteLog("--------------------------------------------------");
+
             var sb = new StringBuilder();
             sb.Append("Indicator ");
             sb.Append(Name);
